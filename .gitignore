@@ -1,0 +1,9 @@
+cjs/
+umd/
+dist/
+node_modules/
+npm-debug.log
+.hggitignore
+ref/
+package-lock.json
+all-docs.json

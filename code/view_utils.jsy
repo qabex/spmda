@@ -1,0 +1,23 @@
+
+export function raf_batch(on_render) ::
+  let q=[], tid=null
+  return @\ ...args ::
+    q.push(...args)
+    if null === tid ::
+      tid = requestAnimationFrame @ _batch
+
+  function _batch() ::
+    const batch = q
+    q=[]; tid=null
+    on_render(batch)
+
+
+export function fetch_cors_get(src, headers) ::
+  return fetch @ src, @{} method: 'GET', mode: 'cors', headers
+export async function fetch_json(src, headers) ::
+  const req = await fetch_cors_get(src, headers)
+  return req.json()
+export async function fetch_text(src, headers) ::
+  const req = await fetch_cors_get(src, headers)
+  return req.text()
+
