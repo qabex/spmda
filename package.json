@@ -28,6 +28,6 @@
     "build": "rollup --config",
     "watch": "npm -s run build -- --watch",
     "prestart": "npm -s run build",
-    "start": "qsrv ./docs ./oow"
+    "start": "qsrv ./basic/docs ./oow"
   }
 }
