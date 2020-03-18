@@ -15,36 +15,56 @@ function tiny_loader(opt) {
       opt.crossorigin = 'anonymous';
 
     D.head.appendChild(Object.assign(s, opt));
-  } else if (!s.promise)
-    return s.promise
+  }
 
-  return s.promise = new Promise((resolve, reject) => {
-    s.onload = e => resolve(e.target);
-    s.onerror = e => reject(e);
-  })
+  if (undefined === s.promise)
+    s.promise = new Promise((resolve, reject) => {
+      s.onload = e => resolve(e.target);
+      s.onerror = e => reject(e);
+    });
+
+  return s.promise
 }
 
-class MarkdownitView extends HTMLElement {
-  async connectedCallback() {
-    const root = this.ownerDocument.createElement('div');
+const as_src_view = ((() => {
+  const _cache = new Map();
 
-    const source = this.textContent;
-    this.textContent = '';
+  const _as_view_class = baseElement =>(
+    class SrcBaseElement extends baseElement {
+      connectedCallback() {
+        const src = this.textContent;
+        this.textContent = '';
+        this._render_src(src, this.ownerDocument);}
 
-    let rendered = this._md_cache.get(source);
+      _render_src(src) {
+        this.src = src;}
+
+      static initialize() {
+        return this}
+      static define_as(key) {
+        const klass = this.initialize();
+        customElements.define(key, klass);
+        return klass} } );
+
+  return (( baseElement ) => {
+    let res = _cache.get(baseElement);
+    if (undefined === res) {
+      res = _as_view_class(baseElement);
+      _cache.set(baseElement, res);}
+    return res}) })());
+
+class MarkdownitView extends as_src_view(HTMLElement) {
+  async _render_src(markdown_src, doc) {
+    let rendered = this._cache.get(markdown_src);
     if (undefined === rendered) {
       const md = await this.md;
-      this._md_cache.set(source,
-        rendered = md.render(source)); }
+      rendered = md.render(markdown_src);
+      this._cache.set(markdown_src, rendered); }
 
+    const root = doc.createElement('div');
     root.innerHTML = rendered;
     this.appendChild(root);}
 
-  static initialize() {
-    this.prototype._md_cache = new Map();
-    this.md = this.prototype.md =
-      _initialize_markdownit(this);
-    return this}
 
   static fence_webcomponent() {
     return (( md ) => {
@@ -52,7 +72,7 @@ class MarkdownitView extends HTMLElement {
       const prev_fence = rules.fence;
       rules.fence = function (tokens, idx, options, env, slf) {
         const tkn = tokens[idx];
-        const m = /\s*[!](\w+)\s*(.*)$/.exec(tkn.info);
+        const m = /\s*[!]([\w\-]+)\s*(.*)$/.exec(tkn.info);
         if (! m) {
           return prev_fence.apply(rules, arguments)}
 
@@ -66,31 +86,38 @@ class MarkdownitView extends HTMLElement {
           catch (err) {}
           elem.setAttribute('options', wc_options); }
 
-        return elem.outerHTML}; }) } }
+        return elem.outerHTML}; }) }
 
 
-customElements.define('markdownit-view', MarkdownitView.initialize());
+  static initialize() {
+    this.prototype._cache = new Map();
+    this.md = this.prototype.md =
+      this._init_markdownit();
+    return this}
+
+  static async _init_markdownit() {
+     {
+      const deps =[
+        tiny_loader('https://cdn.jsdelivr.net/npm/markdown-it@10.0.0/dist/markdown-it.min.js')
+      , tiny_loader('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js') ];
+
+      while (deps.length) {await deps.pop();} }
+
+    const md = window.markdownit({
+      highlight(str, lang, ...args) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return hljs.highlight(lang, str).value}
+          catch (err) {
+            console.warn('[hljs exception]:', {lang}, err); } }
+
+        return '' } });// use external default escaping
+
+    md.use(this.fence_webcomponent(md));
+    return md} }
 
 
-async function _initialize_markdownit(klass) {
-   {
-    const sc0 = tiny_loader('https://cdn.jsdelivr.net/npm/markdown-it@10.0.0/dist/markdown-it.min.js');
-    const sc1 = tiny_loader('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js');
-    await sc0;
-    await sc1;}
-
-  const md = window.markdownit({
-    highlight(str, lang, ...args) {
-      if (lang && hljs.getLanguage(lang)) {
-        try {
-          return hljs.highlight(lang, str).value}
-        catch (err) {
-          console.warn('[hljs exception]:', {lang}, err); } }
-
-      return '' } });// use external default escaping
-
-  md.use(klass.fence_webcomponent(md));
-  return md}
+MarkdownitView.define_as('markdownit-view');
 
 export default MarkdownitView;
 export { MarkdownitView };

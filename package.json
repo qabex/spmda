@@ -1,6 +1,6 @@
 {
   "name": "spmda",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Single-Page MarkDown Application",
   "license": "BSD-2-Clause",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
@@ -28,6 +28,7 @@
     "build": "rollup --config",
     "watch": "npm -s run build -- --watch",
     "prestart": "npm -s run build",
-    "start": "qsrv ./basic/docs ./oow"
+    "start": "qsrv ./basic/docs ./oow",
+    "serve": "qsrv ./oow"
   }
 }

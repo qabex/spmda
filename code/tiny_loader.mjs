@@ -14,11 +14,13 @@ export function tiny_loader(opt) {
       opt.crossorigin = 'anonymous'
 
     D.head.appendChild(Object.assign(s, opt))
-  } else if (!s.promise)
-    return s.promise
+  }
+  
+  if (undefined === s.promise)
+    s.promise = new Promise((resolve, reject) => {
+      s.onload = e => resolve(e.target)
+      s.onerror = e => reject(e)
+    })
 
-  return s.promise = new Promise((resolve, reject) => {
-    s.onload = e => resolve(e.target)
-    s.onerror = e => reject(e)
-  })
+  return s.promise
 }

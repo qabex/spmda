@@ -1,80 +1,60 @@
 import tiny_loader from './tiny_loader.mjs'
+import {svg_data_url, as_src_view} from './view_utils.jsy'
 
 const _mmd0 = @!>
   await tiny_loader @ 'https://cdn.jsdelivr.net/npm/mermaid@8.4.5/dist/mermaidAPI.js'
-  window.mermaid.initialize @: startOnLoad: false
-  return window.mermaid
+  const mermaid = window.mermaid
+  mermaid.initialize @: startOnLoad: false
+  return mermaid
 
 
-async function _mmd_svg_render(source) ::
+async function _mermaid_svg_render(mermaid_src) ::
   const mermaid = await _mmd0
   let svg_xml
   try ::
-    svg_xml = mermaid.render('root', source)
+    svg_xml = mermaid.render('root', mermaid_src)
   catch err ::
-    console.warn @ err
+    console.warn @ 'Mermaid Rendering Problem:', err
     return
 
   // fixup SVG... but WHY?
-  svg_xml = svg_xml.replace('height="100%"', 'preserveAspectRatio="xMinYMin meet"')
+  svg_xml = svg_xml.replace @
+    'height="100%"'
+    'preserveAspectRatio="xMinYMin meet"'
   return svg_xml
 
 
-export class MermaidSVGView extends HTMLElement ::
-  constructor() ::
-    super()
-    this.attachShadow({mode: 'open'})
+export class MermaidSVGView extends as_src_view(HTMLElement) ::
+  _render_svg(mermaid_src) :: return _mermaid_svg_render(mermaid_src)
 
-    const style = this.ownerDocument.createElement('style')
-    style.innerText = `
-      :host { display: flex; overflow: hidden; }
-      figure { margin: 0; padding: 0; flex-grow: 1; display: flex; }
-      `
-    this.shadowRoot.appendChild(style)
-
-  async connectedCallback() ::
-    const source = this.textContent
-    const svg_src = await _mmd_svg_render(source)
+  async _render_src(mermaid_src, doc) ::
+    const svg_src = await this._render_svg(mermaid_src)
     if ! svg_src :: return
 
-    this.textContent = ''
-
-    const root = this.ownerDocument.createElement('figure')
+    const root = doc.createElement('figure')
     root.innerHTML = svg_src
+    this.appendChild(root)
 
-    this.shadowRoot.appendChild(root)
 
+export class MermaidImgView extends as_src_view(HTMLElement) ::
+  _render_svg(mermaid_src) :: return _mermaid_svg_render(mermaid_src)
 
-function svg_data_url(svg_src) ::
-  return 'data:image/svg+xml,' + encodeURIComponent(svg_src)
-
-export class MermaidImageView extends HTMLElement ::
-  async connectedCallback() ::
-    const source = this.textContent
-    const svg_src = await _mmd_svg_render(source)
+  async _render_src(mermaid_src, doc) ::
+    const svg_src = await this._render_svg(mermaid_src)
     if ! svg_src :: return
 
-    this.textContent = ''
-
-    const OD = this.ownerDocument
-    const img = OD.createElement('img')
+    const root = doc.createElement('figure')
+    const img = doc.createElement('img')
     img.src = svg_data_url(svg_src)
-
-    if 0 ::
-      this.appendChild(img)
-
-    else ::
-      const root = OD.createElement('figure')
-      root.classList.add('mermaid')
-      root.appendChild(img)
-      this.parentNode.replaceChild(root, this)
+    root.appendChild(img)
+    this.appendChild(root)
 
 
-customElements.define @ 'mermaid-image-view', MermaidImageView
-customElements.define @ 'mermaid-svg-view', MermaidSVGView
+MermaidImgView.define_as @ 'mermaid-img-view'
+MermaidSVGView.define_as @ 'mermaid-svg-view'
 
-export class MermaidView extends MermaidImageView ::
-customElements.define @ 'mermaid-view', MermaidView
+export class MermaidView extends MermaidImgView ::
+MermaidView.define_as @ 'mermaid-view'
 
 export default MermaidView
 
