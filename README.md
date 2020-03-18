@@ -22,6 +22,8 @@ The "Quick Dev Server" allows live-reloading of changes and auto-updating JSON d
 
 The `<lsdir-view>` web component fetches the specified `src` json document and then renders all referenced files using other web components such as `<markdownit-view>`.
 
+The `textContent` is parsed with [JSON5](https://json5.org/) to be more human-friendly.
+
 ```html
 ...
 <script type='module' src='https://cdn.jsdelivr.net/gh/qabex/spmda@0.0.3/esm/lsdir-view.mjs'></script>
@@ -56,6 +58,8 @@ The `<mermaid-view>` web component renders its `textContent` attribute using the
 #### [Vega-Lite](https://vega.github.io/vega-lite/)
 
 The `<vegalite-view>` web component renders its `textContent` attribute using the [Vega-Lite](https://vega.github.io/vega-lite/) package.
+
+The `textContent` is parsed with [JSON5](https://json5.org/) to be more human-friendly.
 
 ```html
 ...
