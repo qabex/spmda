@@ -1,4 +1,5 @@
-export {default as JSON5} from 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs'
+import JSON5 from 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs'
+export @{} JSON5
 
 export function json5_human(json_src) ::
   json_src = json_src.trim()

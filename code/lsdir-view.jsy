@@ -1,39 +1,85 @@
-import { raf_batch, fetch_json, fetch_text } from './view_utils.jsy'
+import { json5_human } from './deps.jsy'
+import { as_src_view, raf_batch } from './view_utils.jsy'
+import { fetch_as, fetch_json, fetch_cors_get } from './fetch_utils.jsy'
 
-export class LsDirView extends HTMLElement ::
-  async connectedCallback() ::
-    const raf_q = this.bind_batch_render()
+export class LsDirView extends as_src_view(HTMLElement) ::
+  get src() :: return this.getAttribute @ 'src'
+  set src(v) ::
+    if v :: this.setAttribute @ 'src', v
+    else this.removeAttribute @ 'src'
+    this.update()
 
-    const mask = this.as_mask_filter @
-      this.getAttribute('mask')
-    const skip = this.as_prefix_filter @
-      this.getAttribute('prefix')
-    const all_docs = await this.fetch_all @
-      this.getAttribute('src')
+  get prefix() :: return this.getAttribute @ 'prefix'
+  set prefix(v) ::
+    if v :: this.setAttribute @ 'prefix', v
+    else this.removeAttribute @ 'prefix'
+    this.update()
 
-    const ctx = this.render_ctx()
+  get mask() :: return this.getAttribute @ 'mask'
+  set mask(v) ::
+    if v :: this.setAttribute @ 'mask', v
+    else this.removeAttribute @ 'mask'
+    this.update()
+
+  async _render_src(cfg) ::
+    cfg = json5_human(cfg)
+
+    this.render_doc_view =
+      this._bind_render_doc_view @
+        cfg.views || cfg || {}
+
+    this.update()
+
+  update() ::
+    let cur = this._p_update
+    if undefined === cur ::
+      this._p_update = cur = this._update()
+    return cur
+
+  async _update() ::
+    await this
+    this.innerHTML = ''
+
+    const mask = this.as_mask_filter @ this.mask
+    const skip = this.as_prefix_filter @ this.prefix
+    const all_docs = await this.fetch_all @ this.src
+
+    const raf_q = raf_batch @ this._bind_batch()
     for const [fname, doc] of await all_docs ::
       if mask(doc.meta) :: continue
       if skip(fname, doc) :: continue
 
       raf_q @
-        await this.render_doc @
-          await doc.source, ctx
+        await this.render_doc_view(doc)
 
-  bind_batch_render() ::
-    return raf_batch @\ batch ::
+    this._p_update = undefined
+
+  _bind_batch() ::
+    return @\ batch ::
       for const elem of batch ::
         this.appendChild(elem)
 
-  render_ctx() ::
-    return @{}
-      view: this.getAttribute('view') || this.default_view
-      doc: this.ownerDocument
+  _bind_render_doc_view(views_by_ext) ::
+    const owner = this.ownerDocument
+    const fb_view = this.getAttribute('view')
+      || views_by_ext.fallback
+      || this.view_fallback
 
-  render_doc(doc_src, {view, doc}) ::
-    const elem = doc.createElement(view)
-    elem.textContent = doc_src
-    return elem
+    return async function render_doc_view(doc) ::
+      const ext = doc.fname.split('.').pop()
+
+      let attr='textContent', kind='text'
+      let view = views_by_ext[ext]
+        || views_by_ext['.'+ext]
+        || fb_view
+
+      if 'string' !== typeof view ::
+        [view, attr, kind] = view
+
+      const elem = owner.createElement @ view
+      elem[attr] = await fetch_as @ kind, doc.request
+      return elem
+
 
   async fetch_all(src_path) ::
     if ! src_path ::
@@ -44,13 +90,14 @@ export class LsDirView extends HTMLElement ::
     return all_docs.map @
       this.fetch_doc.bind(this)
 
+
   fetch_doc(doc) ::
     const parts = doc.fname.split(/\s*--\s*/)
     doc.name = parts.pop()
     doc.prefix = parts.shift()
     doc.meta = new Set @ parts
 
-    doc.source = fetch_text @
+    doc.request = fetch_cors_get @
       doc.path, this._fetch_headers
     return @[] doc.fname, doc
 
@@ -72,8 +119,9 @@ export class LsDirView extends HTMLElement ::
           return true
       return false
 
+
 Object.assign @ LsDirView.prototype, @{}
-  default_view: 'doc-view'
+  view_fallback: 'pre'
   _fetch_headers: {}
 
 customElements.define @ 'lsdir-view', LsDirView

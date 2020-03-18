@@ -8,6 +8,8 @@ const as_src_view = ((() => {
         this.textContent = '';
         this._render_src(src, this.ownerDocument);}
 
+      disconnectedCallback() {}
+
       _render_src(src) {
         this.src = src;}
 
@@ -39,19 +41,10 @@ function raf_batch(on_render) {
     on_render(batch);} }
 
 
-function fetch_cors_get(src, headers) {
-  return fetch(src,{method: 'GET', mode: 'cors', headers}) }
-async function fetch_json(src, headers) {
-  const req = await fetch_cors_get(src, headers);
-  return req.json()}
-async function fetch_text(src, headers) {
-  const req = await fetch_cors_get(src, headers);
-  return req.text()}
-
 const data_url = (( mime, src ) =>
   `data:${mime},${encodeURIComponent(src)}`);
 const svg_data_url = src =>
   data_url('image/svg+xml', src);
 
-export { as_src_view, data_url, fetch_cors_get, fetch_json, fetch_text, raf_batch, svg_data_url };
+export { as_src_view, data_url, raf_batch, svg_data_url };
 //# sourceMappingURL=view_utils.mjs.map

@@ -1,0 +1,45 @@
+import { json5_human } from './deps.jsy'
+
+export @{} json5_human,
+
+export async function fetch_as(kind, req) ::
+  req = await req
+  switch kind ::
+    case 'body':
+      return req.body
+
+    case 'blob':
+      return req.blob()
+
+    case 'ab': case 'arrayBuffer':
+      return req.arrayBuffer()
+
+    case 'u8': 
+      return new Uint8Array @
+        await req.arrayBuffer()
+
+    case 'form': case 'formData': 
+      return req.formData()
+
+    case 'json':
+      return req.json()
+
+    case 'json5':
+      return json5_human @
+        await req.text()
+
+    case 'src': case 'txt': case 'text': default:
+      return req.text()
+
+
+export function fetch_cors_get(src, headers) ::
+  return fetch @ src, @{} method: 'GET', mode: 'cors', headers
+
+export async function fetch_json(src, headers) ::
+  const req = await fetch_cors_get(src, headers)
+  return req.json()
+
+export async function fetch_text(src, headers) ::
+  const req = await fetch_cors_get(src, headers)
+  return req.text()
+

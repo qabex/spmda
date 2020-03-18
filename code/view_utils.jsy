@@ -9,6 +9,8 @@ export const as_src_view = @!
         this.textContent = ''
         this._render_src(src, this.ownerDocument)
 
+      disconnectedCallback() ::
+
       _render_src(src) ::
         this.src = src
 
@@ -39,15 +41,6 @@ export function raf_batch(on_render) ::
     q=[]; tid=null
     on_render(batch)
 
-
-export function fetch_cors_get(src, headers) ::
-  return fetch @ src, @{} method: 'GET', mode: 'cors', headers
-export async function fetch_json(src, headers) ::
-  const req = await fetch_cors_get(src, headers)
-  return req.json()
-export async function fetch_text(src, headers) ::
-  const req = await fetch_cors_get(src, headers)
-  return req.text()
 
 export const data_url = @\ mime, src =>
   `data:${mime},${encodeURIComponent(src)}`

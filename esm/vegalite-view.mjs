@@ -1,4 +1,4 @@
-import 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs';
+import JSON5 from 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs';
 
 function tiny_loader(opt) {
   const D = document;
@@ -35,6 +35,8 @@ const as_src_view = ((() => {
         const src = this.textContent;
         this.textContent = '';
         this._render_src(src, this.ownerDocument);}
+
+      disconnectedCallback() {}
 
       _render_src(src) {
         this.src = src;}

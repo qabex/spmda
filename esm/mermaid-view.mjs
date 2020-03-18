@@ -34,6 +34,8 @@ const as_src_view = ((() => {
         this.textContent = '';
         this._render_src(src, this.ownerDocument);}
 
+      disconnectedCallback() {}
+
       _render_src(src) {
         this.src = src;}
 
@@ -50,6 +52,7 @@ const as_src_view = ((() => {
       res = _as_view_class(baseElement);
       _cache.set(baseElement, res);}
     return res}) })());
+
 
 const data_url = (( mime, src ) =>
   `data:${mime},${encodeURIComponent(src)}`);
