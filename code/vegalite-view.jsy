@@ -1,6 +1,6 @@
 import tiny_loader from './tiny_loader.mjs'
 import {as_src_view} from './view_utils.jsy'
-import {JSON5} from './deps.jsy'
+import {json5_human} from './deps.jsy'
 
 class VegaLiteViewBaseElement extends as_src_view(HTMLElement) ::
   connectedCallback() ::
@@ -22,12 +22,9 @@ class VegaLiteViewBaseElement extends as_src_view(HTMLElement) ::
     return this.renderDoc @ vl_doc
 
   parseDoc(vegalite_src) ::
-    try :: return JSON5.parse @ vegalite_src
+    try :: return json5_human @ vegalite_src
     catch err ::
-      try :: return JSON5.parse @ `{${vegalite_src}}`
-      catch err ::
-        console.warn @ 'VegaLite parsing problem:', err
-        return
+      console.warn @ 'VegaLite parsing problem:', err
 
   async renderDoc(vegalite_doc) ::
     if 'string' === typeof vegalite_doc ::

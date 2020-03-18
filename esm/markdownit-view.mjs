@@ -1,4 +1,4 @@
-import JSON5 from 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs';
+import 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs';
 
 function tiny_loader(opt) {
   const D = document;
@@ -53,6 +53,12 @@ const as_src_view = ((() => {
       _cache.set(baseElement, res);}
     return res}) })());
 
+function json5_human(json_src) {
+  json_src = json_src.trim();
+  if ('{' !== json_src[0]) {
+    json_src = `{${json_src}}`;}
+  return JSON5.parse(json_src) }
+
 class MarkdownitView extends as_src_view(HTMLElement) {
   async _render_src(markdown_src, doc) {
     let rendered = this._cache.get(markdown_src);
@@ -82,7 +88,7 @@ class MarkdownitView extends as_src_view(HTMLElement) {
         if (wc_options) {
           try {
             wc_options = JSON.stringify(
-              JSON5.parse(`{${wc_options}}`) ); }
+              json5_human(wc_options) ); }
           catch (err) {}
           elem.setAttribute('options', wc_options); }
 

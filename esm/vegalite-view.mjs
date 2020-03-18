@@ -1,4 +1,4 @@
-import JSON5 from 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs';
+import 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs';
 
 function tiny_loader(opt) {
   const D = document;
@@ -53,6 +53,12 @@ const as_src_view = ((() => {
       _cache.set(baseElement, res);}
     return res}) })());
 
+function json5_human(json_src) {
+  json_src = json_src.trim();
+  if ('{' !== json_src[0]) {
+    json_src = `{${json_src}}`;}
+  return JSON5.parse(json_src) }
+
 class VegaLiteViewBaseElement extends as_src_view(HTMLElement) {
   connectedCallback() {
     super.connectedCallback();
@@ -73,12 +79,9 @@ class VegaLiteViewBaseElement extends as_src_view(HTMLElement) {
     return this.renderDoc(vl_doc) }
 
   parseDoc(vegalite_src) {
-    try {return JSON5.parse(vegalite_src)}
+    try {return json5_human(vegalite_src)}
     catch (err) {
-      try {return JSON5.parse(`{${vegalite_src}}`)}
-      catch (err) {
-        console.warn('VegaLite parsing problem:', err);
-        return} } }
+      console.warn('VegaLite parsing problem:', err); } }
 
   async renderDoc(vegalite_doc) {
     if ('string' === typeof vegalite_doc) {

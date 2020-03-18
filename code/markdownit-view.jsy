@@ -1,6 +1,6 @@
 import tiny_loader from './tiny_loader.mjs'
 import {as_src_view} from './view_utils.jsy'
-import {JSON5} from './deps.jsy'
+import {json5_human} from './deps.jsy'
 
 export class MarkdownitView extends as_src_view(HTMLElement) ::
   async _render_src(markdown_src, doc) ::
@@ -31,7 +31,7 @@ export class MarkdownitView extends as_src_view(HTMLElement) ::
         if wc_options ::
           try ::
             wc_options = JSON.stringify @
-              JSON5.parse @ `{${wc_options}}`
+              json5_human @ wc_options
           catch (err) ::
           elem.setAttribute @ 'options', wc_options
 

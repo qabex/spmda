@@ -1,2 +1,8 @@
 export {default as JSON5} from 'https://cdn.jsdelivr.net/npm/json5@2.1.1/dist/index.min.mjs'
 
+export function json5_human(json_src) ::
+  json_src = json_src.trim()
+  if '{' !== json_src[0] ::
+    json_src = `{${json_src}}`
+  return JSON5.parse @ json_src
+
