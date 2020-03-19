@@ -1,0 +1,5 @@
+console.log @
+  'Hello there %c JSY land! %o'
+  'color: purple; font-weight: bold'
+  new Date().toISOString()
+
