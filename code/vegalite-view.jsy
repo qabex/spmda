@@ -43,7 +43,6 @@ class VegaLiteViewBaseElement extends as_src_view(HTMLElement) ::
         vega.parse(vega_spec.spec)
         @{} renderer, hover, container
 
-    //this.appendChild(container)
     vega_view.runAsync()
 
   _container(doc) :: return this
