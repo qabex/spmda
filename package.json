@@ -21,7 +21,7 @@
     "@rollup/plugin-node-resolve": "^7.1.1",
     "qsrv": "*",
     "rollup": "^1.32.1",
-    "rollup-plugin-jsy-lite": "^1.5.3"
+    "rollup-plugin-jsy": "^1.6.0"
   },
   "scripts": {
     "clean": "rm -rf ./esm/* ",

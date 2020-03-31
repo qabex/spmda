@@ -1,7 +1,7 @@
 import pkg from './package.json'
 import rpi_resolve from '@rollup/plugin-node-resolve'
 //import rpi_commonjs from '@rollup/plugin-node-resolve'
-import rpi_jsy from 'rollup-plugin-jsy-lite'
+import rpi_jsy from 'rollup-plugin-jsy'
 const pkg_name = (pkg.name || 'private').replace('-', '_')
 
 const configs = []
