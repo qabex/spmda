@@ -15,7 +15,7 @@ export function tiny_loader(opt) {
 
     D.head.appendChild(Object.assign(s, opt))
   }
-  
+
   if (undefined === s.promise)
     s.promise = new Promise((resolve, reject) => {
       s.onload = e => resolve(e.target)

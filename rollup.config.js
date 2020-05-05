@@ -23,6 +23,7 @@ add_jsy('lsdir-view')
 add_jsy('markdownit-view')
 add_jsy('mermaid-view')
 add_jsy('vegalite-view')
+add_jsy('rtc_handshake')
 
 
 function add_jsy(src_name, opt={}) {

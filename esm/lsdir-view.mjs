@@ -60,11 +60,11 @@ async function fetch_as(kind, req) {
     case 'ab': case 'arrayBuffer':
       return req.arrayBuffer()
 
-    case 'u8': 
+    case 'u8':
       return new Uint8Array(
         await req.arrayBuffer())
 
-    case 'form': case 'formData': 
+    case 'form': case 'formData':
       return req.formData()
 
     case 'json':
