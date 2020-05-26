@@ -1,3 +1,5 @@
+import mqtt_v4 from 'https://cdn.jsdelivr.net/npm/u8-mqtt/esm/web/v4.mjs';
+
 class RTCHandshake {
   static with_peer(pc, send_msg) {
     return new this(pc, send_msg)}
@@ -75,6 +77,77 @@ class RTCHandshake {
   _on_msg_error(msg, err) {
     console.warn("RTC error:", err); } }
 
-export default RTCHandshake;
-export { RTCHandshake };
-//# sourceMappingURL=rtc_handshake.mjs.map
+async function rtc_mqtt_server(opt) {
+  opt.mqtt = mqtt_v4()
+    .with_websock(opt.websock);
+
+  await opt.mqtt.connect();
+  return _rtc_mqtt_server(opt)}
+
+
+async function rtc_mqtt_client(opt) {
+  opt.mqtt = mqtt_v4()
+    .with_websock(opt.websock);
+
+  await opt.mqtt.connect();
+  return _rtc_mqtt_client(opt)}
+
+
+
+function _rtc_mqtt_server(opt) {
+  const _bind_send = opt.bind_send || _bind_mqtt_send;
+  const _bind_recv = opt.bind_recv || _bind_mqtt_recv;
+
+  const _by_chan = new Map();
+
+  _bind_recv(opt, `${opt.topic}/m/:chan_id`,
+    (async ( pkt, {chan_id} ) => {
+      let rtc = _by_chan.get(chan_id);
+      if (undefined === rtc) {
+        rtc = await _init_handshake(chan_id);}
+
+      await rtc.on_rtc_msg(pkt.json());}) );
+
+
+  async function _init_handshake(chan_id) {
+    const chan_send = _bind_send(opt, `${opt.topic}/c/${chan_id}`);
+    const rtc = RTCHandshake.create(chan_send);
+
+    rtc.has_ended.then (() => {
+      _by_chan.delete(chan_id);});
+    _by_chan.set(chan_id, rtc);
+
+    if (opt.on_connection) {
+      opt.on_connection(rtc.pc);}
+    return rtc} }
+
+
+
+function _rtc_mqtt_client(opt) {
+  const _bind_send = opt.bind_send || _bind_mqtt_send;
+  const _bind_recv = opt.bind_recv || _bind_mqtt_recv;
+
+  const chan_id = opt.chan_id || Math.random().toString(36).slice(2);
+  const chan_send = _bind_send(opt, `${opt.topic}/m/${chan_id}`);
+
+  let rtc = RTCHandshake.create(chan_send);
+
+  _bind_recv(opt, `${opt.topic}/c/${chan_id}`,
+    (async ( pkt ) => {
+      await rtc.on_rtc_msg(pkt.json());}) );
+
+  if (opt.on_connection) {
+    opt.on_connection(rtc.pc);}
+
+  return rtc.rtc_initiate()}
+
+
+
+function _bind_mqtt_send(opt, topic) {
+  return opt.mqtt.json_send(topic)}
+
+function _bind_mqtt_recv(opt, topic, on_pkt) {
+  return opt.mqtt.subscribe_topic(topic, on_pkt)}
+
+export { _rtc_mqtt_client, _rtc_mqtt_server, rtc_mqtt_client, rtc_mqtt_server };
+//# sourceMappingURL=rtc_over_mqtt.mjs.map

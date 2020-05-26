@@ -24,15 +24,30 @@ export class RTCHandshake ::
     this.send_msg = send_msg
     pc.addEventListener @ 'icecandidate', this._evt_ice.bind(this, send_msg)
 
+    this.has_connected = new Promise @ on_connected => @
+      this.has_ended = new Promise @ on_ended => @
+        this.pc.addEventListener @ 'connectionstatechange',
+          this._evt_state.bind(this, on_connected, on_ended)
+
   _evt_ice(send_msg, {candidate}) ::
     if candidate ::
       send_msg(candidate)
+
+  _evt_state(on_connected, on_ended) ::
+    switch this.pc.connectionState ::
+      case 'connected':
+        return on_connected(this)
+
+      case 'disconnected': case 'failed': case 'closed':
+        return on_ended(this)
+
 
   async rtc_initiate() ::
     const {pc} = this
     const offer = await pc.createOffer()
     await pc.setLocalDescription(offer)
     await this.send_msg(offer)
+    return pc
 
   async _rtc_offer(offer) ::
     const {pc} = this
@@ -53,9 +68,9 @@ export class RTCHandshake ::
   async on_rtc_msg(msg) ::
     try ::
       if msg.candidate ::
-        return this._rtc_ice(msg)
+        return await this._rtc_ice(msg)
       else if msg.sdp ::
-        return this._rtc_offer(msg)
+        return await this._rtc_offer(msg)
     catch err ::
       this._on_msg_error(msg, err)
 

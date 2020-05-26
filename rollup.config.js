@@ -24,6 +24,7 @@ add_jsy('markdownit-view')
 add_jsy('mermaid-view')
 add_jsy('vegalite-view')
 add_jsy('rtc_handshake')
+add_jsy('rtc_over_mqtt')
 
 
 function add_jsy(src_name, opt={}) {
