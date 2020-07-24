@@ -118,7 +118,7 @@ function _rtc_mqtt_server(opt) {
     _by_chan.set(chan_id, rtc);
 
     if (opt.on_connection) {
-      opt.on_connection(rtc.pc);}
+      opt.on_connection(rtc.pc, chan_id);}
     return rtc} }
 
 
@@ -137,7 +137,7 @@ function _rtc_mqtt_client(opt) {
       await rtc.on_rtc_msg(pkt.json());}) );
 
   if (opt.on_connection) {
-    opt.on_connection(rtc.pc);}
+    opt.on_connection(rtc.pc, chan_id);}
 
   return rtc.rtc_initiate()}
 

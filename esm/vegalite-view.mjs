@@ -77,17 +77,21 @@ class VegaLiteViewBaseElement extends as_src_view(HTMLElement) {
 
 
   async _render_src(vegalite_src) {
-    let vl_doc = this.parseDoc(vegalite_src);
-    return this.renderDoc(vl_doc) }
+    if (vegalite_src.trim()) {
+      let vl_doc = this.parse_doc(vegalite_src);
+      return this.render_doc(vl_doc) } }
 
-  parseDoc(vegalite_src) {
-    try {return json5_human(vegalite_src)}
+  parse_doc(vegalite_src) {
+    try {
+      return {
+        ... this._data
+      , ... json5_human(vegalite_src)} }
     catch (err) {
       console.warn('VegaLite parsing problem:', err); } }
 
-  async renderDoc(vegalite_doc) {
+  async render_doc(vegalite_doc) {
     if ('string' === typeof vegalite_doc) {
-      vegalite_doc = this.parseDoc(vegalite_doc);}
+      vegalite_doc = this.parse_doc(vegalite_doc);}
 
     const {vega, vegaLite} = await this._vegalite;
 
